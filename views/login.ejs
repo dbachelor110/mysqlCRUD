@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+  <%- include('header.ejs') -%>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+      <h2>Login</h2>
+      <form id="loginForm" action="/login" method="post">
+        <div class="formItem">
+          <label for="username">username</label>
+          <input type="text" name="name" id="username">
+        </div>
+    
+        <div class="formItem">
+          <label for="password">password</label>
+          <input type="password" name="password" id="password">
+        </div>
+    
+        <div class="formItem">
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+      <% if (attributes.exist==false) { %>
+        <p style="color: crimson;">* User not exist</p>
+        <button id="singupButton" type="button">Sing up</button>
+      <% } else if (attributes.verify==false) { %>
+        <p style="color: crimson;">* Incorrect password</p>
+      <% } %>
+    </p>
+  </body>
+  <%- include('settoken.ejs') -%>
+  <script type="module">
+    import { addListenerByID } from '/js/addListenerByID.js';
+    const loginHandler=async(event)=>{
+      // 防止表單默認提交行為
+      event.preventDefault();
+      const preFormData = new FormData(event.target);
+      const [...pairs] = preFormData.entries();
+      const formData = pairs.reduce((p,c)=>{p[c[0]]=c[1];return p;},{});
+      fetch('/login',{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body:JSON.stringify(formData),
+      })
+      .then(result=>result.json())
+      .then(json=>json.token)
+      .then(token=>{
+        localStorage.setItem('token', token);
+        document.cookie=`token=${token}`;
+      })
+      .then(result=>document.location.href = "/")
+      .catch(error=>console.log(error));
+    };
+    const addListener=()=>{
+      addListenerByID(`singupButton`,'click',(e)=>window.location.href = "/singup");
+      // addListenerByID(`loginForm`,`submit`,loginHandler);
+    }
+    document.addEventListener("DOMContentLoaded", addListener);
+  </script>
+</html>

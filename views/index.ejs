@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+  <%- include('header.ejs') -%>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+    <% if (user) { %>
+      <h2>Hellow <%= user %></h2>
+      <div hidden id="userID" value="<%- attributes.id %>"></div>
+      <P>You get attributes</P>
+      <ul>
+        <% for(const key in attributes ){ %>
+          <li><%- key %>: <%- attributes[key] %></li>
+        <% } %>
+      </ul>
+      <button id="logoutButton" type="button">Logout</button>
+      <button id="cancelButton" type="button">Cancel account</button>
+    <% } else { %>
+      <h2>Login or Sing up</h2>
+      <button id="loginButton" type="button">Login</button>
+      <button id="singupButton" type="button">Sing up</button>
+    <% } %>
+    </p>
+  </body>
+  <%- include('settoken.ejs') -%>
+  <script type="module">
+    import { addListenerByID } from '/js/addListenerByID.js';
+    const deleteUserHandler=(e)=>{
+        const userID = document.getElementById("userID").getAttribute(`value`);
+        fetch(`/users/${userID}`, {
+              method: "DELETE"
+          })
+          .then(response => {
+              if (response.ok) {
+                  // 如果刪除成功，重新導向到登入頁面
+                  localStorage.removeItem(`token`);
+                  window.location.href = "/login";
+              } else {
+                  // 如果刪除失敗，顯示錯誤信息
+                  alert("Failed to delete account");
+              }
+          })
+          .catch(error => {
+              console.error("Error:", error);
+              alert("An error occurred");
+          });
+      }
+    const addListener=()=>{
+      addListenerByID(`logoutButton`,'click',(e)=>{
+        localStorage.removeItem(`token`);
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        window.location.href = "/"});
+      addListenerByID(`cancelButton`,'click',deleteUserHandler);
+      addListenerByID(`loginButton`,'click',(e)=>window.location.href = "/login");
+      addListenerByID(`singupButton`,'click',(e)=>window.location.href = "/singup");
+    }
+    document.addEventListener("DOMContentLoaded", addListener);
+  </script>
+</html>
+
+<!-- var xhr = new XMLHttpRequest();
+
+xhr.open('GET', 'https://example.com/', true);
+
+xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+xhr.send(); -->
